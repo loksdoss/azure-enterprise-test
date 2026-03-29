@@ -1,0 +1,67 @@
+# Workflow Name
+name: Terraform Azure Deployment
+
+# When the workflow should run
+on:
+  push:
+    branches:
+      - main
+
+# Jobs executed by GitHub Actions
+jobs:
+
+  terraform:
+
+    # Runner Environment
+    runs-on: ubuntu-latest
+
+    steps:
+
+    # Step 1
+    # Checkout Terraform code from GitHub repo
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+
+    # Step 2
+    # Install Terraform CLI in the runner
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+
+
+    # Step 3
+    # Authenticate GitHub runner with Azure
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: |
+          {
+            "clientId": "${{ secrets.ARM_CLIENT_ID }}",
+            "clientSecret": "${{ secrets.ARM_CLIENT_SECRET }}",
+            "subscriptionId": "${{ secrets.ARM_SUBSCRIPTION_ID }}",
+            "tenantId": "${{ secrets.ARM_TENANT_ID }}"
+          }
+
+
+    # Step 4
+    # Initialize Terraform
+    - name: Terraform Init
+      run: terraform init
+
+
+    # Step 5
+    # Validate Terraform code
+    - name: Terraform Validate
+      run: terraform validate
+
+
+    # Step 6
+    # Show Terraform execution plan
+    - name: Terraform Plan
+      run: terraform plan
+
+
+    # Step 7
+    # Deploy infrastructure to Azure
+    - name: Terraform Apply
+      run: terraform apply -auto-approve
